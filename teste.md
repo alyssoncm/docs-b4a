@@ -1,777 +1,665 @@
 # How To Build a Backend for ReactJS Using Back4App
 
-### Introduction
-In this tutorial, you will build a backend for a ReactJS application using Back4App’s powerful features. You’ll combine Back4App’s real-time database, live queries, cloud code, and user authentication to create a robust foundation for your ReactJS front end. By leveraging Parse Server on Back4App, you can offload complex infrastructure tasks—like managing servers and databases—while focusing on building your React application’s functionality.
+## Introduction
 
-By the end of this tutorial, you will have a fully functional backend on Back4App that your ReactJS app can consume via the Parse JavaScript SDK (or REST and GraphQL APIs if you prefer). You’ll also explore how to secure your data using Access Control Lists (ACLs) and Class-Level Permissions (CLPs). Additionally, you’ll integrate common features such as file storage, email verification, password resets, and scheduled tasks using Cloud Jobs. After completing the steps below, you will be equipped to extend this foundation to production-grade applications, integrate third-party services through webhooks, and tap into many additional capabilities that Back4App offers.
+In this tutorial, you will build a complete backend for a ReactJS application using Back4App. You will integrate various Back4App features—such as database management, Cloud Code Functions, user authentication, and real-time queries (Live Queries)—to create a secure, scalable, and robust backend that can seamlessly interact with your ReactJS frontend. Along the way, you will explore how easy it is to set up and configure your backend in Back4App’s environment, saving considerable time and effort compared to manually configuring servers and databases.
+
+Using Back4App for your ReactJS backend can streamline your development workflow. Back4App provides a rich set of services, including a Parse-powered database, real-time updates, and file storage, all of which integrate smoothly with ReactJS. By the end of this tutorial, you will have a fully functional backend that supports data storage, user authentication, and real-time collaboration. You will also gain valuable experience in leveraging Back4App’s security features, scheduling tasks with Cloud Jobs, setting up webhooks for external integrations, and more. After completing this tutorial, you will be well-equipped to expand this foundation into a production-ready application or incorporate custom logic and third-party APIs as needed.
 
 ---
 
 ## Prerequisites
-To complete this tutorial, ensure you have the following requirements and resources in place:
 
-- **A Back4App account**  
-  If you don’t have an account, [sign up for free on Back4App](https://www.back4app.com/).
+To complete this tutorial, you will need:
 
-- **A new Back4App project**  
-  You can follow our [Getting Started with Back4App](https://www.back4app.com/docs/get-started/new-back4app-app) guide to create a fresh project.
+- **A Back4App account and a new Back4App project**  
+  [Getting Started with Back4App](https://www.back4app.com/docs/get-started)  
+  If you do not have an account, you can create one for free. Follow the guide above to get your project ready.
 
-- **Local development environment for React**  
-  Make sure you have Node.js (version 14 or above is recommended) and npm (or Yarn) installed.  
-  - [Install Node.js](https://nodejs.org/en/download/) if you haven’t already.  
-  - If you’re new to React, you can review [React Official Documentation](https://reactjs.org/docs/getting-started.html) for a quick introduction.
+- **Basic ReactJS development environment**  
+  You can set this up using [Create React App](https://create-react-app.dev/docs/getting-started/) or a similar tool. Ensure you have Node.js installed on your machine.
 
-- **Basic knowledge of JavaScript and React**  
-  Familiarity with ES6+ syntax (imports, exports, arrow functions) and how React components work will be helpful.
+- **Node.js (version 14 or above) installed**  
+  [Installing Node.js](https://nodejs.org/en/download/)  
+  You will need Node.js for installing npm packages and running local development servers.
 
-- **Basic knowledge of HTTP APIs**  
-  This tutorial will briefly touch on REST and GraphQL concepts. Although we provide code examples, a basic understanding of API calls is useful.
+- **Familiarity with JavaScript and basic ReactJS concepts**  
+  [ReactJS Official Documentation](https://reactjs.org/docs/getting-started.html)  
+  If you’re new to React, review the official docs or a beginner’s tutorial before starting.
 
-Having these prerequisites in place ensures you can follow each step smoothly. Let’s get started by creating your new Back4App project and connecting it with your React application.
+- **(Optional) Familiarity with REST APIs, GraphQL, or the Parse SDK**  
+  While not strictly necessary, it helps to understand how to work with these technologies for a smoother integration.
 
+Make sure you have all of these prerequisites in place before you begin. Having your Back4App project set up and your local ReactJS environment ready will help you follow along more easily.
 
+---
 
-## Step 1 – Creating a New Project on Back4App and Connecting
+## Step 1 – Setting Up Back4App Project
 
-In this first step, you will create a new Back4App project, obtain your keys, and install the Parse SDK for your React application. This forms the foundation of your backend configuration.
+### Create a New Project
 
-1. **Create a New Project on Back4App**  
-   1. Log in to your Back4App account.  
-   2. Click the “Create New App” button (sometimes labeled “New App”) in your dashboard.  
-   3. Provide a project name (for example, **ReactBackendDemo**) and select a server location if prompted.  
-   4. Click “Create” or “Proceed” to finalize your project creation.  
+The first step in building your ReactJS backend on Back4App is creating a new project. If you have not already created one, follow these steps:
 
-   You will now see your newly created project in the Back4App dashboard. This blank project is what we’ll configure throughout this tutorial.
+1. **Log in to your Back4App account**.  
+2. **Click the “New App” button** in your Back4App dashboard.  
+3. **Give your app a name** (e.g., “ReactJS-Backend-Tutorial”).  
+4. **Select your app stack or region** if prompted, then finalize the creation.
 
-2. **Retrieve Your App Credentials**  
-   - In your project’s dashboard, look for **App Settings** or **App Credentials**.  
-   - Locate your **Application ID** and **Javascript Key** (also known as the Client Key in some contexts).  
-   - Keep your **Master Key** private; you typically won’t expose this in your React app.  
+> [SCREENSHOT: Indicate where you can show the “New App” button and naming your app in the Back4App dashboard.]
 
-3. **Install the Parse SDK in Your React Project**  
-   Next, you’ll integrate the Parse JavaScript SDK into your React application. If you haven’t created a React app yet, run the following command in your terminal to bootstrap a new project (using Create React App as an example):
+Once the project is created, you will see it listed in your Back4App dashboard. This project will be the foundation for all backend configurations discussed in this tutorial.
 
-   ```bash
-   npx create-react-app react-backend-demo
-   cd react-backend-demo
-   ```
+### Connect the Parse SDK
 
-   Now install the `parse` library:
+Back4App relies on the Parse Platform to manage your data, provide real-time features, handle user authentication, and more. Connecting your ReactJS application to Back4App involves installing the `parse` npm package and initializing it with the credentials from your Back4App dashboard.
 
+1. **Retrieve your Parse Keys**:  
+   In your Back4App dashboard, navigate to your app’s “App Settings” or “Security & Keys” section to find your **Application ID** and **JavaScript Key**. You will also find the **Parse Server URL** (often in the format `https://parseapi.back4app.com`).  
+   > [SCREENSHOT: Indicate where the user can see the Application ID, JavaScript Key, and the Server URL in the Back4App dashboard.]
+
+2. **Install the Parse SDK** in your ReactJS project:
    ```bash
    npm install parse
    ```
-
-4. **Initialize Parse in Your React App**  
-   Open the `src/App.js` (or create a dedicated file such as `parseConfig.js`) and initialize Parse using your Back4App credentials. For instance:
-
-   ```javascript
-   import React, { useEffect } from 'react';
-   import Parse from 'parse';
-
-   function App() {
-     useEffect(() => {
-       // Initialize Parse
-       Parse.initialize(
-         'YOUR_APPLICATION_ID',
-         'YOUR_JAVASCRIPT_KEY'
-       );
-       Parse.serverURL = 'https://parseapi.back4app.com/';
-     }, []);
-
-     return (
-       <div className="App">
-         <h1>Welcome to React + Back4App</h1>
-       </div>
-     );
-   }
-
-   export default App;
+   If you’re using Yarn, you can install it with:
+   ```bash
+   yarn add parse
    ```
 
-   Replace `YOUR_APPLICATION_ID` and `YOUR_JAVASCRIPT_KEY` with the values from your Back4App dashboard. Make sure the `Parse.serverURL` is set to `https://parseapi.back4app.com/`.
+3. **Initialize Parse** in your ReactJS application. Typically, you would create a file (e.g., `parseConfig.js`) in your `src` directory:
+   ```javascript
+   // src/parseConfig.js
+   import Parse from 'parse';
 
-**Transition**  
-You’ve just set up a new Back4App project and connected it to a React application. This initial connection allows you to read and write data, authenticate users, and leverage additional Back4App features. Next, we’ll set up your database schema and explore various ways to interact with data (Parse SDK, REST, GraphQL, and Live Queries).
+   // Replace the placeholders with your Back4App credentials
+   Parse.initialize('YOUR_APPLICATION_ID', 'YOUR_JAVASCRIPT_KEY');
+   Parse.serverURL = 'https://parseapi.back4app.com';
+
+   export default Parse;
+   ```
+   This file ensures that whenever you import Parse elsewhere in your React app, it is pre-configured to connect to your specific Back4App instance.
+
+By completing this step, you have established a secure connection between your ReactJS frontend and the Back4App backend. All requests and data transactions are securely routed through this SDK, reducing the complexity of manual REST or GraphQL calls (although you can still use them when needed).
 
 ---
 
 ## Step 2 – Setting Up the Database
 
-In this step, you will create and manage your data model on Back4App, exploring several ways to read and write data. This is a crucial step because your application’s logic will typically revolve around data storage and retrieval.
+### Saving and Querying Data
 
-### 1. Creating a Data Model
-
-A data model defines how data is structured in your database. For our example, let’s say you’re building a simple “To-Do” application. You might have a class called `Task` with fields such as `title` (string) and `isComplete` (boolean).
-
-1. **In Your Back4App Dashboard**  
-   - Navigate to your project and click **Database** in the left sidebar.  
-   - Click **Create a class**.  
-   - Name it `Task` and select **Create an empty class**.  
-   - Click **Create class**.  
-
-   You’ll now see the `Task` class in your database browser.  
-
-2. **Adding Columns (Fields)**  
-   - Within the `Task` class, click **Add a new column**.  
-   - Name the column `title` and set its type to **String**.  
-   - Add another column named `isComplete` of type **Boolean**.
-
-Your data model is now ready to store tasks. Each `Task` object in the database will have a `title` and an `isComplete` flag.
-
-### 2. Creating a Data Model Using the Back4App AI Agent
-Back4App offers an AI-driven feature to help you quickly create data models. You can describe your data requirements, and the AI Agent will generate a recommended schema:
-
-1. **Open the AI Agent (if enabled on your account)**  
-   - From the Back4App dashboard, look for the **AI Agent** or **AI Data Model** option in your Database section.  
-   - Provide a brief description such as “Create a class `Task` with a `title` (string) and `isComplete` (boolean).”  
-   - The AI agent will suggest a schema, which you can accept or edit.
-
-This can speed up schema creation, especially for complex data models.
-
-### 3. Reading and Writing Data Using the Parse SDK (React)
-
-Now that you have a basic `Task` class, let’s see how to create and retrieve data from your React code.
-
-1. **Saving Data**  
-   In your React app, you might have a form to create a new task. Here’s an example of how to save data using the Parse SDK:
-
-   ```javascript
-   import React, { useState } from 'react';
-   import Parse from 'parse';
-
-   function TaskCreator() {
-     const [title, setTitle] = useState('');
-
-     const handleSaveTask = async () => {
-       const Task = Parse.Object.extend('Task');
-       const task = new Task();
-       task.set('title', title);
-       task.set('isComplete', false);
-
-       try {
-         await task.save();
-         alert('Task saved successfully!');
-       } catch (error) {
-         console.error('Error while saving task:', error);
-       }
-     };
-
-     return (
-       <div>
-         <input
-           type="text"
-           placeholder="Task Title"
-           value={title}
-           onChange={(e) => setTitle(e.target.value)}
-         />
-         <button onClick={handleSaveTask}>Create Task</button>
-       </div>
-     );
-   }
-
-   export default TaskCreator;
-   ```
-
-   **Explanation**:  
-   - `Parse.Object.extend('Task')` references the `Task` class you created.  
-   - `task.set('title', title)` and `task.set('isComplete', false)` set the object’s properties.  
-   - `task.save()` asynchronously saves data to the Back4App database.  
-
-2. **Querying Data**  
-   To read data, use the `Parse.Query` object:
-
-   ```javascript
-   import React, { useState, useEffect } from 'react';
-   import Parse from 'parse';
-
-   function TaskList() {
-     const [tasks, setTasks] = useState([]);
-
-     useEffect(() => {
-       const fetchTasks = async () => {
-         const Task = Parse.Object.extend('Task');
-         const query = new Parse.Query(Task);
-         // Optional: query.equalTo('isComplete', false);
-         try {
-           const results = await query.find();
-           setTasks(results);
-         } catch (error) {
-           console.error('Error while fetching tasks:', error);
-         }
-       };
-
-       fetchTasks();
-     }, []);
-
-     return (
-       <div>
-         <h2>Tasks</h2>
-         <ul>
-           {tasks.map((task) => (
-             <li key={task.id}>
-               {task.get('title')} - 
-               {task.get('isComplete') ? 'Complete' : 'Incomplete'}
-             </li>
-           ))}
-         </ul>
-       </div>
-     );
-   }
-
-   export default TaskList;
-   ```
-
-   **Explanation**:  
-   - `Parse.Query(Task)` lets you build queries against the `Task` class.  
-   - `query.find()` returns an array of objects that match the query.  
-   - Each returned object provides methods like `get('fieldName')` to access data.
-
-### 4. Reading and Writing Data Using the REST API
-
-Alternatively, Back4App lets you interact with your database using REST endpoints. This is useful when you cannot use the Parse SDK directly or need an HTTP-based approach.
-
-- **Save (POST)**  
-  To save a new `Task` object, make a POST request to `https://parseapi.back4app.com/classes/Task` with the required headers and JSON body:
-
-  ```bash
-  curl -X POST \
-  -H "X-Parse-Application-Id: YOUR_APPLICATION_ID" \
-  -H "X-Parse-REST-API-Key: YOUR_REST_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"title":"New Task via REST","isComplete":false}' \
-  https://parseapi.back4app.com/classes/Task
-  ```
-
-- **Retrieve (GET)**  
-  To fetch a list of tasks:
-
-  ```bash
-  curl -X GET \
-  -H "X-Parse-Application-Id: YOUR_APPLICATION_ID" \
-  -H "X-Parse-REST-API-Key: YOUR_REST_API_KEY" \
-  https://parseapi.back4app.com/classes/Task
-  ```
-
-In a React environment, you could use `fetch` or `axios`:
+With your Back4App project set up and the Parse SDK integrated into your React app, you can now start saving and retrieving data. The simplest way to create a record is to use the `Parse.Object` class:
 
 ```javascript
-async function fetchTasksREST() {
+// Example: Create a Todo item
+
+import Parse from './parseConfig';
+
+async function createTodoItem(title, isCompleted) {
+  const Todo = Parse.Object.extend('Todo');
+  const todo = new Todo();
+  todo.set('title', title);
+  todo.set('isCompleted', isCompleted);
+
   try {
-    const response = await fetch(
-      'https://parseapi.back4app.com/classes/Task',
-      {
-        method: 'GET',
-        headers: {
-          'X-Parse-Application-Id': 'YOUR_APPLICATION_ID',
-          'X-Parse-REST-API-Key': 'YOUR_REST_API_KEY',
-        },
-      }
-    );
-    const data = await response.json();
-    console.log(data.results);
+    const savedTodo = await todo.save();
+    console.log('Todo saved successfully:', savedTodo);
+    return savedTodo;
   } catch (error) {
-    console.error('REST fetch error:', error);
+    console.error('Error saving Todo:', error);
+  }
+}
+
+// Example: Query all Todo items
+
+async function fetchTodos() {
+  const Todo = Parse.Object.extend('Todo');
+  const query = new Parse.Query(Todo);
+
+  try {
+    const results = await query.find();
+    console.log('Fetched Todo items:', results);
+    return results;
+  } catch (error) {
+    console.error('Error fetching Todos:', error);
   }
 }
 ```
 
-### 5. Reading and Writing Data Using the GraphQL API
+#### Using the REST API
 
-Back4App also supports GraphQL, which can be convenient for more efficient data querying, especially in complex front-end applications.
+Alternatively, you can use Back4App’s REST API endpoints:
 
-- **Schema**  
-  By default, Parse automatically creates a GraphQL schema for your classes. You can explore it by going to `https://parseapi.back4app.com/graphql` (if enabled in your Back4App project).
+```bash
+curl -X POST \
+  -H "X-Parse-Application-Id: YOUR_APPLICATION_ID" \
+  -H "X-Parse-REST-API-Key: YOUR_REST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"title": "Buy groceries", "isCompleted": false}' \
+  https://parseapi.back4app.com/classes/Todo
+```
 
-- **Query Example**  
-  A simple GraphQL query to list tasks might look like:
+#### Using the GraphQL API
 
-  ```graphql
-  query {
-    tasks {
-      edges {
-        node {
-          objectId
-          title
-          isComplete
-        }
-      }
+Back4App also provides a GraphQL interface:
+
+```graphql
+mutation {
+  createTodo(input: {
+    fields: {
+      title: "Clean the house"
+      isCompleted: false
     }
-  }
-  ```
-
-- **Mutation Example**  
-  To create a new task:
-
-  ```graphql
-  mutation {
-    createTask(fields: { title: "My GraphQL Task", isComplete: false }) {
+  }) {
+    todo {
       objectId
       title
-      isComplete
+      isCompleted
     }
   }
-  ```
+}
+```
 
-In React, you could use any GraphQL library (such as Apollo Client) to make these requests, passing your Back4App credentials in the headers.
+These diverse options let you integrate data operations in the way that best suits your development process—whether that’s through the Parse SDK, REST, or GraphQL.
 
-### 6. Working with Live Queries (Optional)
+### Schema Design and Data Types
 
-Live Queries enable real-time updates in your React app. For instance, when a task changes status, all connected clients immediately see that update.
+By default, Parse allows **schema creation on the fly**, but you can also define your classes and data types in the Back4App dashboard for more control.
 
-1. **Enabling Live Queries in Back4App**  
-   - In the Back4App dashboard, go to **Server Settings**.  
-   - Make sure “Live Queries” is enabled for the classes you want to watch (e.g., `Task`).  
+1. **Navigate to the “Database” section** in your Back4App dashboard.  
+2. **Create a new class** (e.g., “Todo”) and add relevant columns, such as `title` (String) and `isCompleted` (Boolean).  
+   > [SCREENSHOT: Indicate where you click “Create a class” and how to configure new columns.]
 
-2. **Using Live Queries in React**  
-   Install `live-query-utils` or a relevant tool, or handle it directly from Parse:
+Back4App also supports various data types: **String**, **Number**, **Boolean**, **Date**, **File**, **Relation**, **GeoPoint**, etc. You can choose the appropriate type for each field. If you prefer, you can also let Parse automatically create these columns when you first save an object from your React app.
 
-   ```javascript
-   import { useEffect, useState } from 'react';
-   import Parse from 'parse';
+#### Creating a Data Model with the Back4App AI Agent
 
-   function LiveQueryTaskList() {
-     const [tasks, setTasks] = useState([]);
+Back4App offers an AI Agent that can help you design your data model:
 
-     useEffect(() => {
-       const Task = Parse.Object.extend('Task');
-       const query = new Parse.Query(Task);
+1. **Open the AI Agent** from your project dashboard or Data Browser view.  
+2. **Describe your data model** in simple language (e.g., “A Todo class with a title, a description, and a completion flag”).  
+3. **Review and apply** the generated schema.  
+   > [SCREENSHOT: Indicate where the AI Agent can be accessed, and show an example of the generated schema interface.]
 
-       query.subscribe().then((subscription) => {
-         subscription.on('open', () => {
-           console.log('Live Query subscription opened.');
-         });
+Using the AI Agent can save you time when setting up your data architecture and ensure consistency across your application.
 
-         subscription.on('create', (createdTask) => {
-           setTasks((prevTasks) => [...prevTasks, createdTask]);
-         });
+### Relational Data
 
-         subscription.on('update', (updatedTask) => {
-           setTasks((prevTasks) =>
-             prevTasks.map((task) =>
-               task.id === updatedTask.id ? updatedTask : task
-             )
-           );
-         });
+If you have relational data—say, a `User` object that points to multiple `Todo` items—you can use **Pointers** or **Relations** in Parse. For example, adding a pointer to user:
 
-         // Add other event handlers: enter, leave, delete, etc.
-       });
+```javascript
+// Linking a Todo to a user with a pointer
+async function createTodoForUser(userObjectId, title) {
+  const Todo = Parse.Object.extend('Todo');
+  const todo = new Todo();
 
-       // Initial fetch
-       const fetchTasks = async () => {
-         const results = await query.find();
-         setTasks(results);
-       };
-       fetchTasks();
-     }, []);
+  // Construct a pointer to the user
+  const userPointer = new Parse.User();
+  userPointer.id = userObjectId;
 
-     return (
-       <ul>
-         {tasks.map((task) => (
-           <li key={task.id}>
-             {task.get('title')} - {task.get('isComplete') ? 'Complete' : 'Incomplete'}
-           </li>
-         ))}
-       </ul>
-     );
-   }
+  // Set fields
+  todo.set('title', title);
+  todo.set('owner', userPointer);
 
-   export default LiveQueryTaskList;
-   ```
+  try {
+    return await todo.save();
+  } catch (err) {
+    console.error('Error creating Todo with user relationship:', err);
+  }
+}
+```
 
-With Live Queries, your React UI remains up-to-date without manual polling.
+When you query, you can also include pointer data:
 
-**Transition**  
-At this point, you’ve set up a functional database schema, learned multiple ways to interact with your data, and even explored real-time updates via Live Queries. Next, we’ll apply security measures such as Access Control Lists and Class-Level Permissions to restrict who can read or write data.
+```javascript
+const query = new Parse.Query('Todo');
+query.include('owner');
+const todosWithOwner = await query.find();
+```
+
+This `include('owner')` call fetches user details alongside each Todo, making your relational data seamlessly accessible.
+
+### Live Queries
+
+For real-time updates, Back4App provides **Live Queries**. In your ReactJS app, you can subscribe to changes on a specific class:
+
+1. **Enable Live Queries** in your Back4App dashboard under your app’s **Server Settings**. Make sure “Live Queries” is turned on.  
+2. **Initialize a Live Query Subscription** in your code:
+
+```javascript
+import Parse from './parseConfig';
+
+async function subscribeToTodos(callback) {
+  const query = new Parse.Query('Todo');
+  const subscription = await query.subscribe();
+
+  subscription.on('create', (newTodo) => {
+    console.log('New Todo created:', newTodo);
+    callback('create', newTodo);
+  });
+
+  subscription.on('update', (updatedTodo) => {
+    console.log('Todo updated:', updatedTodo);
+    callback('update', updatedTodo);
+  });
+
+  subscription.on('delete', (deletedTodo) => {
+    console.log('Todo deleted:', deletedTodo);
+    callback('delete', deletedTodo);
+  });
+
+  return subscription;
+}
+```
+
+By subscribing, you receive real-time notifications whenever a new Todo is created, updated, or deleted. This feature is particularly valuable for collaborative or dynamic apps where multiple users need to see the latest data without refreshing the page.
 
 ---
 
 ## Step 3 – Applying Security with ACLs and CLPs
 
-Security is paramount in any production app. Back4App provides Access Control Lists (ACLs) for per-object security and Class-Level Permissions (CLPs) for broader rules at the class level.
+### Back4app Security Mechanism
 
-1. **Brief Overview**  
-   - **ACL**: Lets you define which users or roles can read or write a specific object.  
-   - **CLP**: Lets you define read/write permissions at the class level, controlling whether the public can create objects, whether only logged-in users can read, etc.
+Back4App takes security seriously by providing **Access Control Lists (ACLs)** and **Class-Level Permissions (CLPs)**. These features let you restrict who can read or write data on a per-object or per-class basis, ensuring only authorized users can modify your data.
 
-2. **Setting Up Class-Level Permissions in the Dashboard**  
-   1. Go to the Back4App dashboard and navigate to **Database** > **Security**.  
-   2. Select the `Task` class (or whichever class you want to secure).  
-   3. You can configure **Public Read**, **Public Write**, or require users to be authenticated.  
-   4. You can also restrict creation, querying, or deletion.  
+### Access Control Lists (ACLs)
 
-3. **Configuring ACLs in Code**  
-   When creating or updating an object, you can set ACLs programmatically:
+An **ACL** is applied to individual objects to determine which users, roles, or the public can perform read/write operations. For example:
 
-   ```javascript
-   const Task = Parse.Object.extend('Task');
-   const task = new Task();
+```javascript
+async function createPrivateTodo(title, ownerUser) {
+  const Todo = Parse.Object.extend('Todo');
+  const todo = new Todo();
+  todo.set('title', title);
 
-   const acl = new Parse.ACL();
-//   acl.setPublicReadAccess(false);
-//   acl.setPublicWriteAccess(false);
+  // Create an ACL granting read/write access only to the owner
+  const acl = new Parse.ACL(ownerUser);
+  acl.setPublicReadAccess(false);
+  acl.setPublicWriteAccess(false);
 
-   // Only let the current user read/write:
-   acl.setReadAccess(Parse.User.current(), true);
-   acl.setWriteAccess(Parse.User.current(), true);
+  todo.setACL(acl);
 
-   task.setACL(acl);
-   task.set('title', 'My secure task');
-   task.set('isComplete', false);
-   await task.save();
-   ```
+  try {
+    return await todo.save();
+  } catch (err) {
+    console.error('Error saving private todo:', err);
+  }
+}
+```
 
-This ensures only the current logged-in user can read or modify the object.
+When you save the object, it has an ACL that prevents anyone but the specified user from reading or modifying it.
 
-**Transition**  
-Now that your classes and objects are secured, you can confidently store sensitive data. In the next section, we’ll explore Cloud Code, which lets you add server-side logic (triggers, validations, and business rules) without spinning up an external server.
+> [SCREENSHOT: Indicate how ACLs appear in the data browser if you want to demonstrate the ACL column in the Back4App dashboard.]
 
----
+### Class-Level Permissions (CLPs)
 
-## Step 4 – Writing Cloud Code Functions
+**CLPs** govern an entire class’s default permissions, such as whether the class is publicly readable or writable, or if only certain roles can access it.
 
-Cloud Code allows you to implement server-side functions, triggers (beforeSave, afterSave, etc.), and validations. This is useful for logic that shouldn’t reside in the client, such as sending push notifications, adjusting data before saving, or integrating with external APIs.
+1. **Go to your Back4App Dashboard**, select your app, and open the **Database** section.  
+2. **Select a class** (e.g., “Todo”).  
+3. **Open the Class-Level Permissions** tab.  
+   > [SCREENSHOT: Indicate where to find CLPs in the dashboard.]  
+4. Configure your defaults, such as “Requires Authentication” for read or write, or “No Access” for the public.  
 
-1. **Why Cloud Code**  
-   Typical use cases include:
-   - Running custom validation before saving data.  
-   - Sending notifications when a certain event occurs (e.g., a user completes a task).  
-   - Integrating with external APIs in a secure environment (e.g., payment gateways).
-
-2. **Example Function**  
-   Let’s create a simple Cloud Code function to mark a task as complete:
-
-   ```javascript
-   Parse.Cloud.define('markTaskComplete', async (request) => {
-     const { taskId } = request.params;
-     const Task = Parse.Object.extend('Task');
-     const query = new Parse.Query(Task);
-     try {
-       const task = await query.get(taskId);
-       task.set('isComplete', true);
-       await task.save();
-       return `Task with ID ${taskId} was marked complete.`;
-     } catch (error) {
-       throw new Error(`Cannot mark task complete: ${error.message}`);
-     }
-   });
-   ```
-
-   **Explanation**:  
-   - `request.params.taskId` is passed from the client.  
-   - We fetch the task, set `isComplete` to `true`, and save.  
-   - If successful, we return a confirmation message; otherwise, we throw an error.
-
-3. **Deployment**  
-   1. In the Back4App dashboard, locate **Cloud Code** in the left panel.  
-   2. Open your `main.js` (or whichever file is designated for your Cloud Code).  
-   3. Paste your function.  
-   4. Click **Deploy** or **Push** changes.  
-
-4. **Calling Cloud Code from React**  
-   You can invoke this function from your React application using the `Parse.Cloud.run` method:
-
-   ```javascript
-   import Parse from 'parse';
-
-   async function markTaskAsComplete(taskId) {
-     try {
-       const result = await Parse.Cloud.run('markTaskComplete', { taskId });
-       console.log(result);
-     } catch (error) {
-       console.error('Error calling markTaskComplete:', error);
-     }
-   }
-   ```
-
-5. **NPM Modules in Cloud Code**  
-   You can also add external NPM packages to your Cloud Code environment:
-
-   1. Under **Cloud Code** in your Back4App dashboard, go to **Cloud Code Settings**.  
-   2. Specify the packages you need under **package.json**.  
-   3. Deploy again so your changes take effect.
-
-**Transition**  
-You’ve now seen how to implement custom server-side logic using Cloud Code. Next, we’ll turn our attention to user management: configuring authentication, signing up and logging in users, and even adding social logins.
+These permissions set the baseline, while ACLs fine-tune permissions for individual objects. A robust security model typically combines both CLPs (broad restrictions) and ACLs (fine-grained per-object restrictions).
 
 ---
 
-## Step 5 – Configuring Authentication
+## Step 4 – Writing and Deploying Cloud Functions
 
-User authentication is essential for any modern app. Parse (and thus Back4App) supports robust user management out of the box.
+### Cloud Code Functions Architecture
 
-1. **Enable User Class and Basic Settings**  
-   - In your Back4App dashboard, you’ll typically see a default `_User` class. This is where all user data is stored.  
-   - You can set some Class-Level Permissions to restrict user creation, querying, or update capabilities.
+**Cloud Code** allows you to run server-side logic in response to triggers (e.g., before a save or after a delete) or as custom functions that you can call from your frontend. With Cloud Code:
 
-2. **Sign Up, Log In, Log Out**  
-   Below is a basic example of how to manage users in React with the Parse SDK.
+- You can **install and import NPM modules** for advanced functionality.  
+- You can implement **triggers** (e.g., `beforeSave`, `afterSave`) to validate or transform data before it’s stored.  
+- You can create **custom endpoints** to run specialized logic not covered by default operations.
 
-   ```javascript
-   import Parse from 'parse';
+In Back4App, Cloud Code runs inside the Parse Server environment. You typically have a `main.js` (or `index.js`) file where you define these functions.
 
-   // Sign up
-   async function signUpUser(username, password, email) {
-     const user = new Parse.User();
-     user.set('username', username);
-     user.set('password', password);
-     user.set('email', email);
+### Deploy Your Function
 
-     try {
-       const signedUpUser = await user.signUp();
-       console.log('User signed up', signedUpUser);
-     } catch (error) {
-       console.error('Error signing up:', error);
-     }
-   }
+Below is a simple Cloud Code function that calculates the length of a text string sent from the client:
 
-   // Log in
-   async function logInUser(username, password) {
-     try {
-       const user = await Parse.User.logIn(username, password);
-       console.log('Logged in user:', user);
-     } catch (error) {
-       console.error('Error logging in:', error);
-     }
-   }
+```javascript
+// main.js
 
-   // Log out
-   async function logOutUser() {
-     try {
-       await Parse.User.logOut();
-       console.log('User logged out');
-     } catch (error) {
-       console.error('Error logging out:', error);
-     }
-   }
+Parse.Cloud.define('calculateTextLength', async (request) => {
+  const { text } = request.params;
+  if (!text) {
+    throw new Error('No text provided');
+  }
+  return { length: text.length };
+});
+```
+
+**Deploying via the Back4App CLI**:  
+1. Install the CLI:  
+   ```bash
+   npm install -g back4app-cli
    ```
+2. Login and initialize your project:  
+   ```bash
+   back4app login
+   back4app init
+   ```
+3. Deploy your cloud code:  
+   ```bash
+   back4app deploy
+   ```
+   > [SCREENSHOT: Indicate how the CLI looks in terminal or show the Cloud Code directory structure in your editor.]
 
-3. **Social Login**  
-   Back4App supports third-party logins (Google, Apple, Facebook, etc.). You configure these providers in your Back4App dashboard (under **Auth Providers**). Then, in your app, you can call methods such as `Parse.User._linkWith(...)` or use specialized Parse functionality for each provider. Please refer to [Back4App’s Social Login documentation](https://www.back4app.com/docs/security-and-privacy/users/linking-a-user-to-oauth-providers) for detailed steps.
+**Deploying through the Dashboard**:  
+1. In your app’s dashboard, go to **Cloud Code** > **Functions**.  
+2. Copy/paste the function into the **main.js** editor.  
+3. Click **Save** or **Deploy**.
 
-**Transition**  
-You now have user authentication set up. Next, let’s explore how to handle file uploads and retrieval in Back4App, which can store images, documents, or any other file type your React app may need.
+### Calling Your Function
+
+From ReactJS using the Parse SDK:
+
+```javascript
+import Parse from './parseConfig';
+
+async function getTextLength(text) {
+  try {
+    const result = await Parse.Cloud.run('calculateTextLength', { text });
+    console.log('Text length:', result.length);
+  } catch (err) {
+    console.error('Error calling cloud function:', err);
+  }
+}
+```
+
+You can also call it via REST:
+
+```bash
+curl -X POST \
+  -H "X-Parse-Application-Id: YOUR_APP_ID" \
+  -H "X-Parse-REST-API-Key: YOUR_REST_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"text": "Hello Back4App"}' \
+  https://parseapi.back4app.com/functions/calculateTextLength
+```
+
+Or via GraphQL:
+
+```graphql
+mutation {
+  calculateTextLength(input: {
+    text: "Hello GraphQL"
+  }) {
+    result
+  }
+}
+```
+
+This flexibility enables you to integrate your custom logic into your ReactJS frontend or any other client that supports REST or GraphQL.
+
+---
+
+## Step 5 – Configuring User Authentication
+
+### User Authentication in Back4App
+
+Back4App leverages the **Parse User** class as the foundation for authentication. By default, Parse handles password hashing, session tokens, and secure storage. This means you don’t have to set up complex security flows manually.
+
+### Setting Up User Authentication
+
+In a React application, you can create a new user with:
+
+```javascript
+import Parse from './parseConfig';
+
+async function signUpUser(username, password, email) {
+  const user = new Parse.User();
+  user.set('username', username);
+  user.set('password', password);
+  user.set('email', email);
+
+  try {
+    await user.signUp();
+    console.log('User signed up successfully!');
+  } catch (error) {
+    console.error('Error signing up user:', error);
+  }
+}
+```
+
+Log in an existing user:
+
+```javascript
+async function logInUser(username, password) {
+  try {
+    const user = await Parse.User.logIn(username, password);
+    console.log('User logged in:', user);
+  } catch (error) {
+    console.error('Error logging in user:', error);
+  }
+}
+```
+
+Via REST, a login might look like:
+
+```bash
+curl -X GET \
+  -H "X-Parse-Application-Id: YOUR_APP_ID" \
+  -H "X-Parse-REST-API-Key: YOUR_REST_API_KEY" \
+  -G \
+  --data-urlencode 'username=alice' \
+  --data-urlencode 'password=secret123' \
+  https://parseapi.back4app.com/login
+```
+
+### Session Management
+
+After a successful login, Parse creates a **session token** that is stored in the user object. In your React app, you can access the currently logged-in user:
+
+```javascript
+const currentUser = Parse.User.current();
+if (currentUser) {
+  console.log('Currently logged-in user:', currentUser.getUsername());
+} else {
+  console.log('No user is logged in');
+}
+```
+
+Parse automatically handles token-based sessions in the background, but you can also manually manage or revoke them. This is useful when you need to log out:
+
+```javascript
+await Parse.User.logOut();
+```
+
+### Social Login Integration
+
+Back4App and Parse can integrate with popular OAuth providers, such as **Google** or **Facebook**, by installing additional packages or using existing adapters. For example, you can set up Facebook login by configuring your **Facebook App ID** and using `Parse.FacebookUtils.logIn()`. Detailed instructions vary, so refer to the [Parse Social Login Docs](https://docs.parseplatform.org/js/guide/#oauth-logins) or relevant Back4App guides.
+
+### Email Verification and Password Reset
+
+To enable email verification and password reset:
+
+1. **Navigate to the Email Settings** in your Back4App dashboard.  
+2. **Enable email verification** to ensure new users verify ownership of their email addresses.  
+3. **Configure the From address**, email templates, and your custom domain if desired.  
+4. For password reset:
+   ```javascript
+   await Parse.User.requestPasswordReset(email);
+   ```
+   This triggers an email with a password reset link from Back4App.
+
+These features improve account security and user experience by validating user ownership of emails and providing a secure password-recovery method.
 
 ---
 
 ## Step 6 – Handling File Storage
 
-Back4App’s file storage allows you to manage files in a scalable manner, automatically assigning a globally accessible URL. This is helpful for images, documents, or other assets you may need to associate with your data.
+### Uploading and Retrieving Files
 
-1. **Setting Up File Storage**  
-   - File storage is typically enabled by default in Back4App.  
-   - Check your project’s **App Settings** or **Server Settings** to confirm that file storage is active.
+Parse includes the `Parse.File` class for handling file uploads, which Back4App stores securely:
 
-2. **Upload an Image Example**  
-   Suppose you want users to upload profile pictures. Here’s how to do it in React:
+```javascript
+import Parse from './parseConfig';
 
-   ```javascript
-   import React, { useState } from 'react';
-   import Parse from 'parse';
+async function uploadImage(file) {
+  // file is typically from an <input type="file" ... /> in React
+  const name = file.name;
+  const parseFile = new Parse.File(name, file);
 
-   function FileUploader() {
-     const [selectedFile, setSelectedFile] = useState(null);
+  try {
+    const savedFile = await parseFile.save();
+    console.log('File saved:', savedFile.url());
+    return savedFile.url();
+  } catch (err) {
+    console.error('Error uploading file:', err);
+  }
+}
+```
 
-     const handleFileChange = (event) => {
-       setSelectedFile(event.target.files[0]);
-     };
+To attach the file to an object in the database, you can do:
 
-     const handleUpload = async () => {
-       if (!selectedFile) return;
+```javascript
+async function createPhotoObject(file) {
+  const Photo = Parse.Object.extend('Photo');
+  const photo = new Photo();
+  const parseFile = new Parse.File(file.name, file);
+  photo.set('imageFile', parseFile);
 
-       const parseFile = new Parse.File(selectedFile.name, selectedFile);
-       try {
-         const savedFile = await parseFile.save();
-         console.log('File uploaded:', savedFile.url());
-       } catch (error) {
-         console.error('Error uploading file:', error);
-       }
-     };
+  return await photo.save();
+}
+```
 
-     return (
-       <div>
-         <input type="file" onChange={handleFileChange} />
-         <button onClick={handleUpload}>Upload File</button>
-       </div>
-     );
-   }
+Retrieving the file URL is straightforward:
 
-   export default FileUploader;
-   ```
+```javascript
+const imageFile = photo.get('imageFile');
+const imageUrl = imageFile.url();
+```
 
-   **Explanation**:  
-   - `new Parse.File(selectedFile.name, selectedFile)` creates a Parse file object.  
-   - `parseFile.save()` uploads the file to Back4App’s storage.  
-   - `savedFile.url()` gives you a public URL for that file.
+You can display this `imageUrl` in your React components by setting it as the `src` of an `<img>` tag.
 
-3. **Security Considerations**  
-   - By default, uploaded files are publicly accessible by their URL.  
-   - You can limit file access with Cloud Code or by storing references in restricted classes.
+### File Security
 
-**Transition**  
-With file storage integrated, your React application can handle user-uploaded content seamlessly. Next, let’s add essential user management features like email verification and password reset.
+By default, files are publicly accessible via their URL. You can add access control by setting up **CLPs** and **ACLs** on the underlying `File` objects if you prefer more restricted or authenticated-only access. This ensures only your app’s authorized users can retrieve certain files.
 
 ---
 
-## Step 7 – Email Verification and Password Reset
+## Step 7 – Scheduling Tasks with Cloud Jobs
 
-Ensuring valid email addresses and offering password reset functionality is crucial for maintaining user trust and security.
+### Cloud Jobs
 
-1. **Why Verify Emails and Provide Password Reset**  
-   - Validating email addresses helps confirm user identities and reduce spam or fraudulent sign-ups.  
-   - Password reset capabilities are standard in modern applications for better UX and security.
+**Cloud Jobs** in Back4App let you schedule and run routine tasks on your backend—like cleaning up old data or sending a daily summary email. A typical Cloud Job might look like this:
 
-2. **Back4App Dashboard Configuration**  
-   1. Go to **App Settings** > **Email Settings** (or similar).  
-   2. Enable **Email Verification** to require users to verify their email after sign-up.  
-   3. Enable **Password Reset** to allow the system to send reset instructions.  
-   4. You can customize the email templates with your branding, text, and links.
+```javascript
+// main.js
 
-3. **Code Example**  
-   - **Request Password Reset** in React:
+Parse.Cloud.job('cleanupOldTodos', async (request) => {
+  // This runs in the background, not triggered by a direct user request
+  const Todo = Parse.Object.extend('Todo');
+  const query = new Parse.Query(Todo);
 
-     ```javascript
-     import Parse from 'parse';
+  // For example, remove todos older than 30 days
+  const now = new Date();
+  const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
+  const cutoff = new Date(now - THIRTY_DAYS);
 
-     async function requestPasswordReset(email) {
-       try {
-         await Parse.User.requestPasswordReset(email);
-         alert('Password reset instructions sent to ' + email);
-       } catch (error) {
-         console.error('Error requesting password reset:', error);
-       }
-     }
-     ```
+  query.lessThan('createdAt', cutoff);
 
-   - **Email Verification** is automatically handled once the user signs up, as Parse will send a verification email if enabled in your dashboard.
+  try {
+    const oldTodos = await query.find({ useMasterKey: true });
+    await Parse.Object.destroyAll(oldTodos, { useMasterKey: true });
+    return `Deleted ${oldTodos.length} old Todos.`;
+  } catch (err) {
+    throw new Error('Error during cleanup:' + err.message);
+  }
+});
+```
 
-**Transition**  
-Your user flow is now more polished. Let’s move on to automating repetitive tasks using Cloud Jobs—useful for cleaning up outdated records, sending periodic emails, or other scheduled processes.
+1. **Deploy your Cloud Code** with the new job (via CLI or the dashboard).  
+2. **Go to the Back4App Dashboard** > **Cloud Jobs**.  
+   > [SCREENSHOT: Indicate how you can schedule the job in the dashboard, specifying frequency or on-demand execution.]  
+3. **Schedule** the job to run daily or at whatever interval suits your needs.
 
----
-
-## Step 8 – Scheduling Tasks with Cloud Jobs
-
-Cloud Jobs let you schedule tasks to run at a specific time or interval. They are perfect for automating backend tasks (e.g., sending weekly reports, archiving old data).
-
-1. **What Cloud Jobs Do**  
-   Cloud Jobs are basically Cloud Code functions with a scheduling mechanism in the Back4App dashboard. They run on the server side without user interaction.
-
-2. **Example: A Daily Clean-Up Job**  
-   Let’s say you want to archive tasks older than 30 days:
-
-   ```javascript
-   Parse.Cloud.job('archiveOldTasks', async (request) => {
-     const Task = Parse.Object.extend('Task');
-     const query = new Parse.Query(Task);
-
-     // Calculate date 30 days ago
-     const thirtyDaysAgo = new Date();
-     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-     query.lessThan('createdAt', thirtyDaysAgo);
-
-     try {
-       const oldTasks = await query.find();
-       for (const task of oldTasks) {
-         task.set('archived', true);
-         await task.save(null, { useMasterKey: true });
-       }
-       return `Archived ${oldTasks.length} tasks.`;
-     } catch (error) {
-       throw new Error(`Error archiving tasks: ${error.message}`);
-     }
-   });
-   ```
-
-   **Deployment**:  
-   - Add this job to your `main.js` in Cloud Code.  
-   - Deploy your changes.
-
-3. **Scheduling the Job**  
-   - Go to **Cloud Jobs** in the Back4App dashboard.  
-   - Find `archiveOldTasks` and schedule it (e.g., to run daily at midnight).  
-
-**Transition**  
-With Cloud Jobs, you’ve automated tasks to run without manual intervention. Next, we’ll explore webhooks, which let your backend call external services whenever certain events or triggers occur.
+Cloud Jobs enable you to automate background maintenance or other periodic processes—without requiring manual intervention.
 
 ---
 
-## Step 9 – Integrating Webhooks
+## Step 8 – Integrating Webhooks
 
-Webhooks extend your app’s capabilities by sending HTTP requests to external URLs in response to specific events. For instance, you can notify a third-party service each time a new task is created.
+### Webhooks
 
-1. **Definition**  
-   - A **webhook** is a user-defined HTTP callback that triggers when an event happens on your server (e.g., creation of a database object).
+**Webhooks** allow your Back4App app to send HTTP requests to an external service whenever certain events occur. This is powerful for integrating with third-party systems like payment gateways (e.g., Stripe), email marketing tools, or analytics platforms.
 
-2. **Configuration**  
-   - In the Back4App dashboard, navigate to **Webhooks** or **Integrations**.  
-   - Define a new webhook with a target URL (e.g., `https://example.com/webhook-endpoint`).  
-   - Specify which event triggers the webhook (e.g., an object in the `Task` class is created or updated).
+1. **Navigate to the Webhooks configuration** in your Back4App dashboard.  
+2. **Set up an endpoint** (e.g., `https://your-external-service.com/webhook-endpoint`).  
+3. **Configure triggers** to specify which events in your Back4App classes or Cloud Code functions will fire the webhook.
 
-3. **Example Use Case**  
-   - Suppose you integrate with Slack or Stripe. When a user completes a task, you can fire a webhook to Slack to notify your team.
+For instance, if you want to notify a Slack channel whenever a new `Todo` is created:
 
-   **Server-Side Implementation** (using Cloud Code triggers):
-   ```javascript
-   Parse.Cloud.afterSave('Task', async (request) => {
-     if (request.object.get('isComplete')) {
-       // If it's complete, call an external API or rely on a configured webhook
-       // Example: Send a POST request to Slack
-       // Or let the B4A Webhook do it automatically if configured
-     }
-   });
-   ```
+- Create a Slack App that accepts incoming webhooks.  
+- Copy the Slack webhook URL.  
+- In your Back4App dashboard, set the endpoint to that Slack URL for the event “New record in the Todo class.”  
+- You can also add custom HTTP headers or payloads if needed.
 
-4. **Transition**  
-Webhooks help you integrate with external ecosystems and microservices. Finally, let’s see how the Back4App Admin Panel ties all these features together for easier management.
+In some advanced scenarios, you can define Webhooks in Cloud Code by making custom HTTP requests in triggers:
+
+```javascript
+Parse.Cloud.afterSave('Todo', async (request) => {
+  // If it's a new Todo...
+  if (!request.original) {
+    await Parse.Cloud.httpRequest({
+      method: 'POST',
+      url: 'https://your-external-service.com/webhook-endpoint',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: {
+        todoId: request.object.id,
+        title: request.object.get('title'),
+      }
+    });
+  }
+});
+```
 
 ---
 
-## Step 10 – Exploring the Back4App Admin Panel
+## Step 9 – Exploring the Back4App Admin Panel
 
-The Back4App Admin Panel is your single-pane-of-glass for managing data, monitoring logs, scheduling tasks, viewing analytics, and more.
+### Admin Panel
 
-1. **Where to Find It**  
-   - Log in to your Back4App account and select your project.  
-   - On the left sidebar, you will see multiple sections: **Database**, **Cloud Code**, **Security**, **Cloud Jobs**, **Logs**, **Analytics**, etc.
+Back4App provides an **Admin App** (Parse Dashboard-based) that gives you a powerful UI to manage your app beyond the standard data browser:
 
-2. **Key Features**  
-   - **Database**: View, edit, or delete records in any class.  
-   - **Logs**: Monitor application logs, Cloud Code logs, and error logs to debug issues.  
-   - **Background Jobs**: Manage and schedule Cloud Jobs.  
-   - **Push Notifications** (if relevant to your plan): Send real-time notifications to users.  
-   - **Analytics**: Track usage metrics like requests, API hits, etc.
+- **View and edit classes**: Create new classes, edit existing data, manage indexes.
+- **Manage users and roles**: Reset passwords, view email confirmations, or ban accounts if necessary.
+- **Configure app settings**: Adjust your security keys, environment variables, or application environment.
 
-3. **Transition / Final Step**  
-After exploring the Admin Panel, you can confidently deploy your React + Back4App application to production. Let’s wrap up and discuss potential next steps.
+[Back4App Admin App Documentation](https://www.back4app.com/docs/parse-dashboard/admin-app)
+
+> [SCREENSHOT: Indicate how to access the Admin Panel from your project’s settings or an external URL provided by Back4App.]
+
+Using the Admin Panel streamlines administrative tasks that might otherwise require manual code updates or database manipulation. You can keep an eye on logs, server performance, and schedule additional tasks as needed.
 
 ---
 
 ## Conclusion
 
-In this comprehensive tutorial, you created a secure, feature-rich backend for a ReactJS application using Back4App. You configured a new Back4App project, set up a database schema, wrote code to handle data via the Parse SDK, REST, GraphQL, and Live Queries, and ensured security with ACLs and CLPs. You then extended the functionality with Cloud Code, user authentication, file storage, email verification, and password resets. Finally, you explored scheduling tasks with Cloud Jobs, integrating webhooks for external services, and working with the Back4App Admin Panel for overall project management.
+By following this comprehensive tutorial, you have:
 
-By accomplishing these steps, you’ve gained practical skills in:
-
-- Spinning up a **Back4App** project for use in React applications.  
-- **Modeling** and **interacting** with data in multiple ways (SDK, REST, GraphQL).  
-- Implementing **real-time** updates with Live Queries.  
-- Applying **security** best practices (ACLs, CLPs).  
-- Writing and deploying **Cloud Code** for custom backend logic.  
-- Managing **user authentication**, social logins, and user security workflows.  
-- Handling **file storage** in a scalable manner.  
-- Configuring **email verification** and **password reset** flows.  
-- Scheduling repetitive tasks with **Cloud Jobs**.  
-- Integrating with external services via **webhooks**.  
-- Navigating the **Back4App Admin Panel** to manage, debug, and analyze your backend.
+- **Created a secure backend** for a ReactJS app on Back4App.  
+- **Configured a database** with class schemas, data types, and relationships.  
+- **Integrated real-time queries** (Live Queries) for immediate data updates.  
+- **Applied security measures** using ACLs and CLPs to protect and manage data access.  
+- **Implemented Cloud Code** functions to run custom business logic on the server side.  
+- **Set up user authentication** with support for email verification and password resets.  
+- **Managed file uploads** and retrieval, with optional file security controls.  
+- **Scheduled Cloud Jobs** for automated background tasks.  
+- **Used Webhooks** to integrate with external services.  
+- **Explored the Back4App Admin Panel** for advanced app management.
 
 ### Next Steps
-- Explore **Push Notifications** if your React app has a mobile companion or uses web push.  
-- Integrate with **third-party APIs** using Cloud Code or webhooks (e.g., payment processing, analytics tracking).  
-- Look into **role-based security** for fine-grained permission controls.  
-- Review additional [Back4App documentation](https://www.back4app.com/docs/) for advanced features like GraphQL customization, log analytics, or Container-based hosting.
 
-With a solid backend in place, you can focus on building out your ReactJS user interface, adding more intricate business logic, and scaling to real-world production scenarios. Back4App’s serverless platform takes care of the heavy lifting so you can deliver powerful applications faster.
+- **Build a production-ready ReactJS app** by extending this backend to handle more complex data models, caching strategies, and performance optimizations.  
+- **Integrate advanced features** such as specialized authentication flows, role-based access control, or external APIs (like payment gateways).  
+- **Check out Back4App’s official documentation** for deeper dives into advanced security, performance tuning, and logs analysis.  
+- **Explore other tutorials** on real-time chat applications, IoT dashboards, or location-based services. You can combine the techniques learned here with third-party APIs to create complex, real-world applications.
 
-Good luck, and happy coding!
+With a solid ReactJS frontend and a robust Back4App backend, you are now well-equipped to develop feature-rich, scalable, and secure applications. Continue exploring more advanced functionalities, integrate your own business logic, and harness the power of Back4App to save you countless hours in server and database administration. Happy coding!
